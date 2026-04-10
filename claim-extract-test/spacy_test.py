@@ -70,15 +70,16 @@ def pre_tag_chunk(chunk_text):
 import json
 import os
 
-input_path = os.path.join(os.path.dirname(__file__), "test_output.jsonl")
+input_path = os.path.join(os.path.dirname(__file__), "text_knowledge_base.jsonl")
 output_path = os.path.join(os.path.dirname(__file__), "test_output_tagged.jsonl")
 
 with open(input_path, "r") as infile, open(output_path, "w") as outfile:
     for line in infile:
         record = json.loads(line)
         heading = record.get("section_heading", "")
-        # Skipping the tagging part for reference sections
-        if "reference" in heading.lower():
+        semantic_category = str(record.get("semantic_category", "")).strip().lower()
+        # Skip tagging for references, using semantic category first.
+        if semantic_category == "reference" or "reference" in heading.lower():
             outfile.write(json.dumps(record) + "\n")
             print(f"[chunk {record['chunk_id']}] (skipped - references section)")
             continue

@@ -9,7 +9,7 @@ load_dotenv()
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-MODEL = "claude-haiku-4-5"
+MODEL = "claude-opus-4-6"
 MAX_RETRIES = 4
 
 
@@ -87,6 +87,7 @@ with open(input_path, "r") as infile, open(output_path, "w") as outfile:
                 claim_data["doc_name"] = record["doc_name"]
                 claim_data["category"] = record.get("category", "")
                 claim_data["section_heading"] = record.get("section_heading", "")
+                claim_data["semantic_category"] = record.get("semantic_category", "other")
 
                 outfile.write(json.dumps(claim_data) + "\n")
                 written += 1

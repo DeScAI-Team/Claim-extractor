@@ -3,23 +3,36 @@
 # import chromadb
 # from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 import os
-import glob, argparse
+import glob
+import argparse
 import json
+import re
 from pathlib import Path
-from docling.datamodel.pipeline_options import EasyOcrOptions, PdfPipelineOptions
+from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.chunking import HybridChunker
 from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
-from docling_core.types.doc import ImageRefMode, PictureItem, TableItem
+from docling_core.types.doc import PictureItem, TableItem
 from transformers import AutoTokenizer
-#----
-from docling.datamodel.base_models import InputFormat
+import anthropic
 
 # === CONFIG ===
 EMBED_MODEL_ID = "BAAI/bge-m3"
 MAX_TOKENS = 300
 DEFAULT_OUTPUT_JSONL = "text_knowledge_base.jsonl"
 IMAGE_RESOLUTION_SCALE = 2.0
+HEADING_CLASSIFIER_RETRIES = 3
+ALLOWED_SEMANTIC_CATEGORIES = {
+    "abstract",
+    "introduction",
+    "method",
+    "result",
+    "conclusion",
+    "reference",
+    "other",
+}
+
+anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 # === SETUP ===
 tokenizer = HuggingFaceTokenizer(
@@ -56,6 +69,87 @@ def get_image_export_converter():
         format_options={"pdf": img_pdf_format_options}
     )
 
+# ============================ Semantic Heading Classifier ==============================
+def _extract_json_object(raw_text):
+    """Extract and parse a JSON object from model text output."""
+    text = raw_text.strip()
+    if not text:
+        raise ValueError("empty response")
+    # Try direct parse first
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: first JSON object in the response
+    match = re.search(r"\{[\s\S]*\}", text)
+    if not match:
+        raise ValueError("no JSON object found")
+    parsed = json.loads(match.group(0))
+    if not isinstance(parsed, dict):
+        raise ValueError("parsed JSON is not an object")
+    return parsed
+
+
+def get_semantic_heading_map(headings_list):
+    """
+    Uses Anthropic Claude to map technical headings to functional categories.
+    """
+    if not headings_list:
+        return {}
+
+    system_prompt = (
+        "You are a scientific document structure analyst. "
+        "Categorize each heading into one of: introduction, abstract, method, result, conclusion, reference, other. "
+        "If the name matches or similiar to the above sections, just give simantic category as the above mentioned ones."
+        "Return ONLY a valid JSON object mapping each input heading to one category. "
+        "Do not rename or omit any heading."
+    )
+
+    user_content = "HEADINGS:\n" + "\n".join(headings_list)
+
+    lower_to_original = {h.lower(): h for h in headings_list}
+
+    for attempt in range(1, HEADING_CLASSIFIER_RETRIES + 1):
+        try:
+            response = anthropic_client.messages.create(
+                model="claude-opus-4-6",  # Fast and cheap for classification
+                max_tokens=1024,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_content}],
+            )
+
+            raw_content = "".join(
+                block.text for block in response.content if hasattr(block, "text")
+            )
+            parsed_map = _extract_json_object(raw_content)
+
+            # Enforce strict key/value contract for downstream stability.
+            cleaned_map = {}
+            for heading in headings_list:
+                value = parsed_map.get(heading)
+                if value is None:
+                    value = parsed_map.get(heading.lower())
+                if value is None:
+                    maybe_key = lower_to_original.get(heading.lower(), heading).lower()
+                    value = parsed_map.get(maybe_key)
+                label = str(value).strip().lower() if value is not None else "other"
+                cleaned_map[heading] = label if label in ALLOWED_SEMANTIC_CATEGORIES else "other"
+
+            return cleaned_map
+
+        except Exception as e:
+            print(
+                f"  [WARN] Anthropic heading classification attempt "
+                f"{attempt}/{HEADING_CLASSIFIER_RETRIES} failed: {e}"
+            )
+
+    print("  [ERROR] Anthropic heading classification failed after retries; using 'other'.")
+    return {h: "other" for h in headings_list}
+
+
 # ============================Export figures and tables==============================
 def export_figures(pdf_path, output_base_dir="exported_figures"):
     """Export figures and tables from a PDF."""
@@ -68,7 +162,7 @@ def export_figures(pdf_path, output_base_dir="exported_figures"):
     images_dir.mkdir(parents=True, exist_ok=True)
     tables_dir.mkdir(parents=True, exist_ok=True)
     
-    print(f"Gettingt the figures from{pdf_path}...")
+    print(f"Getting figures from {pdf_path}...")
     
     img_converter = get_image_export_converter()
     conv_res = img_converter.convert(pdf_path)
@@ -124,108 +218,71 @@ def process_folder(folder_path=None, file_path=None, starting_chunk_id=0, export
     all_chunks = []
     chunk_id = starting_chunk_id
 
+    files_to_process = []
     if file_path:
-        print(f"Processing single file: {file_path}")
-        
-        # Export figures if requested
-        if export_images:
-            export_figures(file_path)
-        
-        pdf_path_obj = Path(file_path)
-        doc_name = pdf_path_obj.stem
-
-        relative_path = pdf_path_obj.parent.name
-        
-        doc = converter.convert(source=file_path).document
-
-        for chunk in chunker.chunk(dl_doc=doc):
-            ser_txt = chunker.contextualize(chunk=chunk)
-            token_count = tokenizer.count_tokens(ser_txt)
-
-            heading, _, body = ser_txt.partition("\n")
-            body = body.strip()
-
-            all_chunks.append({
-                "chunk_id": chunk_id,
-                "doc_name": doc_name,
-                "category": relative_path,
-                "section_heading": heading,
-                "text": body,
-                "token_count": token_count
-            })
-
-            chunk_id += 1
-            
+        files_to_process.append(Path(file_path))
     elif folder_path:
         if recursive:
-            # Process all PDFs in subdirectories
-            pdf_files = find_all_pdfs(folder_path)
-            total_files = len(pdf_files)
-            print(f"Found {total_files} PDF files in subdirectories")
-            
-            for idx, pdf_path in enumerate(pdf_files, 1):
-                pdf_path_str = str(pdf_path)
-                print(f"[{idx}/{total_files}] Processing: {pdf_path_str}")
-                
-                #Gets imagges and tables if requested
-                if export_images:
-                    export_figures(pdf_path_str)
-                
-                doc_name = pdf_path.stem
-                
-                category = pdf_path.parent.name
-                
-                try:
-                    doc = converter.convert(source=pdf_path_str).document
-
-                    for chunk in chunker.chunk(dl_doc=doc):
-                        ser_txt = chunker.contextualize(chunk=chunk)
-                        token_count = tokenizer.count_tokens(ser_txt)
-
-                        heading, _, body = ser_txt.partition("\n")
-                        body = body.strip()
-
-                        all_chunks.append({
-                            "chunk_id": chunk_id,
-                            "doc_name": doc_name,
-                            "category": category,
-                            "section_heading": heading,
-                            "text": body,
-                            "token_count": token_count
-                        })
-
-                        chunk_id += 1
-                except Exception as e:
-                    print(f"Error processing {pdf_path_str}: {e}")
-                    continue
+            files_to_process = find_all_pdfs(folder_path)
         else:
-            for pdf_path in glob.glob(os.path.join(folder_path, "*.pdf")):
-                print(f"Processing: {pdf_path}")
-                
-                # Export figures if requested
-                if export_images:
-                    export_figures(pdf_path)
-                
-                doc_name = os.path.basename(pdf_path).replace(".pdf", "")
-                doc = converter.convert(source=pdf_path).document
+            files_to_process = [Path(p) for p in glob.glob(os.path.join(folder_path, "*.pdf"))]
 
-                for chunk in chunker.chunk(dl_doc=doc):
-                    ser_txt = chunker.contextualize(chunk=chunk)
-                    token_count = tokenizer.count_tokens(ser_txt)
-
+    for idx, pdf_path in enumerate(files_to_process, 1):
+        print(f"[{idx}/{len(files_to_process)}] Processing: {pdf_path.name}")
+        
+        if export_images:
+            export_figures(str(pdf_path))
+        
+        doc_name = pdf_path.stem
+        category = pdf_path.parent.name or "root"
+        
+        try:
+            doc = converter.convert(source=str(pdf_path)).document
+            
+            # 1. First Pass: Collect all unique headings for this document
+            doc_chunks_raw = []
+            unique_headings = set()
+            
+            for chunk in chunker.chunk(dl_doc=doc):
+                ser_txt = chunker.contextualize(chunk=chunk)
+                if "\n" in ser_txt:
                     heading, _, body = ser_txt.partition("\n")
-                    body = body.strip()
+                    heading = heading.strip()
+                else:
+                    # Some chunks may not have a heading line at all.
+                    heading = ""
+                    body = ser_txt
+                
+                # Filter out junk/empty headings before classifying
+                if len(heading) > 3:
+                    unique_headings.add(heading)
+                
+                doc_chunks_raw.append({
+                    "heading": heading,
+                    "body": body,
+                    "token_count": tokenizer.count_tokens(ser_txt)
+                })
 
-                    all_chunks.append({
-                        "chunk_id": chunk_id,
-                        "doc_name": doc_name,
-                        "category": "root",
-                        "section_heading": heading,
-                        "text": body,
-                        "token_count": token_count
-                    })
+            # 2. Second Pass: Get Semantic Mapping from LLM
+            print(f"  → Classifying {len(unique_headings)} unique headings...")
+            heading_map = get_semantic_heading_map(list(unique_headings))
 
-                    chunk_id += 1
+            # 3. Third Pass: Assemble final chunks with semantic tags
+            for raw in doc_chunks_raw:
+                all_chunks.append({
+                    "chunk_id": chunk_id,
+                    "doc_name": doc_name,
+                    "category": category,
+                    "section_heading": raw["heading"], # Original Header
+                    "semantic_category": heading_map.get(raw["heading"], "other"), # New Category
+                    "text": raw["body"],
+                    "token_count": raw["token_count"]
+                })
+                chunk_id += 1
+                
+        except Exception as e:
+            print(f"Error processing {pdf_path}: {e}")
+            continue
 
     return all_chunks
 
@@ -245,14 +302,16 @@ if __name__ == "__main__":
     OUTPUT_JSONL = args.output
     append_mode = args.append
     recursive = not args.no_recursive
+
+    if bool(FOLDER_PATH) == bool(FILE_PATH):
+        parser.error("Provide exactly one of --folder/-F or --file/-f.")
+    if FILE_PATH and not Path(FILE_PATH).is_file():
+        parser.error(f"File not found: {FILE_PATH}")
+    if FOLDER_PATH and not Path(FOLDER_PATH).is_dir():
+        parser.error(f"Folder not found: {FOLDER_PATH}")
     
     start_id = get_last_chunk_id_fallback(OUTPUT_JSONL) if append_mode else 0
     new_chunks = process_folder(FOLDER_PATH, FILE_PATH, start_id, export_images=args.export_images, recursive=recursive)
-
-    if append_mode:
-        with open("temporary_data.jsonl", "w") as temp_f:
-            for chunk in new_chunks:
-                temp_f.write(json.dumps(chunk) + "\n")
 
     write_mode = "a" if append_mode else "w"
     with open(OUTPUT_JSONL, write_mode) as f:

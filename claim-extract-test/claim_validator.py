@@ -21,21 +21,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # === CONFIG ===
-VLLM_BASE_URL        = os.environ.get("VLLM_BASE_URL",           "http://localhost:8000/v1")
-VLLM_API_KEY         = os.environ.get("VLLM_API_KEY",            "token-abc123")
-MODEL                = os.environ.get("VALIDATOR_MODEL",          "mistralai/Mixtral-8x7B-Instruct-v0.1")
-CONCURRENCY          = int(os.environ.get("VALIDATOR_CONCURRENCY", "5"))
-MAX_RETRIES          = 3
+VLLM_BASE_URL         = os.environ.get("VLLM_BASE_URL",            "http://localhost:8000/v1")
+VLLM_API_KEY          = os.environ.get("VLLM_API_KEY",             "none")
+
+MODEL                 = os.environ.get("VALIDATOR_MODEL",           "mixtral-8x7b-instruct")
+CONCURRENCY           = int(os.environ.get("VALIDATOR_CONCURRENCY", "15"))
+
+MAX_RETRIES           = 3
 KEY_SECTION_MAX_CHARS = int(os.environ.get("VALIDATOR_KEY_SECTION_MAX_CHARS", "24000"))
 
 INPUT_CLAIMS    = os.path.join(os.path.dirname(__file__), "final_claims_for_audit.jsonl")
-SOURCE_CHUNKS   = os.path.join(os.path.dirname(__file__), "test_output.jsonl")
+SOURCE_CHUNKS   = os.environ.get(
+    "VALIDATOR_SOURCE_CHUNKS",
+    os.path.join(os.path.dirname(__file__), "text_knowledge_base.jsonl"),
+)
 OUTPUT_VALIDATED = os.path.join(os.path.dirname(__file__), "validated_claims.jsonl")
 
 KEY_SECTION_KEYWORDS = [
     "method", "result", "conclusion", "finding",
     "discussion", "experiment", "analysis", "outcome",
 ]
+SEMANTIC_KEY_BUCKETS = {"method", "result", "conclusion"}
 
 METHOD_SECTION_HINTS = ["method", "materials", "approach", "experiment", "protocol"]
 RESULT_SECTION_HINTS = ["result", "finding", "analysis", "observation"]
@@ -52,6 +58,39 @@ the sections support the claim. Respond ONLY in valid JSON with: \
 KEY SECTIONS: {key_sections}
 
 CLAIM: {claim}"""
+
+
+def _extract_first_json_object(text: str) -> str:
+    """Return the first balanced JSON object substring from text.
+
+    This is resilient to leading/trailing prose and code fences.
+    """
+    start = text.find("{")
+    if start == -1:
+        raise ValueError("no JSON object start found")
+
+    depth = 0
+    in_string = False
+    escape = False
+    for i, ch in enumerate(text[start:], start=start):
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : i + 1]
+    raise ValueError("unterminated JSON object")
 
 
 
@@ -103,8 +142,15 @@ def load_key_sections(source_jsonl: str) -> dict:
         for line in f:
             rec = json.loads(line)
             heading = rec.get("section_heading", "").lower()
-            if any(kw in heading for kw in KEY_SECTION_KEYWORDS):
+            semantic_category = str(rec.get("semantic_category", "")).strip().lower()
+
+            bucket = None
+            if semantic_category in SEMANTIC_KEY_BUCKETS:
+                bucket = semantic_category
+            elif any(kw in heading for kw in KEY_SECTION_KEYWORDS):
                 bucket = classify_heading(heading)
+
+            if bucket:
                 doc_sections[rec["doc_name"]][bucket].append(
                     f"[{rec['section_heading']}]\n{rec.get('text', '')}"
                 )
@@ -141,23 +187,40 @@ async def validate_claim(
         record.get("doc_name", ""),
         "No key sections available for this document.",
     )
-    prompt = VALIDATION_PROMPT.format(
+    base_prompt = VALIDATION_PROMPT.format(
         key_sections=key_sections,
         claim=record.get("claim", ""),
     )
+    current_max_tokens = 256
 
     async with semaphore:
         for attempt in range(MAX_RETRIES):
             try:
+                prompt = base_prompt
+                if attempt > 0:
+                    prompt += (
+                        "\n\nIMPORTANT: Return one complete valid JSON object only. "
+                        "Do not include markdown or extra text."
+                    )
                 response = await client.chat.completions.create(
                     model=MODEL,
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=256,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "Respond with exactly one valid JSON object and nothing else."
+                            ),
+                        },
+                        {"role": "user", "content": prompt},
+                    ],
+                    response_format={"type": "json_object"},
+                    max_tokens=current_max_tokens,
                     temperature=0.0,
                 )
                 raw = response.choices[0].message.content.strip()
                 clean = re.sub(r"```(?:json)?|```", "", raw).strip()
-                parsed = json.loads(clean)
+                json_blob = _extract_first_json_object(clean)
+                parsed = json.loads(json_blob)
 
                 verdict = parsed.get("verdict", "")
                 if verdict not in ("supported", "unsupported", "insufficient_info"):
@@ -177,6 +240,7 @@ async def validate_claim(
             except json.JSONDecodeError as exc:
                 msg = f"JSON parse error (attempt {attempt + 1}): {exc}"
                 print(f"  [MALFORMED] chunk {record.get('chunk_id')} — {msg}")
+                current_max_tokens = min(512, current_max_tokens + 64)
                 if attempt == MAX_RETRIES - 1:
                     return {
                         **record,
@@ -189,6 +253,8 @@ async def validate_claim(
             except ValueError as exc:
                 msg = str(exc)
                 print(f"  [INVALID]   chunk {record.get('chunk_id')} — {msg}")
+                if "unterminated JSON object" in msg:
+                    current_max_tokens = min(512, current_max_tokens + 64)
                 if attempt == MAX_RETRIES - 1:
                     return {
                         **record,
@@ -235,6 +301,20 @@ async def main() -> None:
             if line:
                 claims.append(json.loads(line))
     print(f"  {len(claims)} claims to validate.\n")
+
+    missing_docs = sorted(
+        {
+            rec.get("doc_name", "")
+            for rec in claims
+            if rec.get("doc_name", "") not in key_sections_map
+        }
+    )
+    if missing_docs:
+        print(
+            f"  WARNING: {len(missing_docs)} claim document(s) have no key sections "
+            "in SOURCE_CHUNKS. Validation quality will be poor for those docs."
+        )
+        print(f"  Missing docs sample: {missing_docs[:5]}\n")
 
     counter = [0]
 
