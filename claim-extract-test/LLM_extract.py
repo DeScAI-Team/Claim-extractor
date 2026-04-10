@@ -2,21 +2,23 @@ import json
 import time
 import os
 import re
-import anthropic
+from openai import OpenAI, RateLimitError
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-
-MODEL = "claude-opus-4-6"
+VLLM_BASE_URL = os.environ.get("VLLM_BASE_URL", "http://localhost:8000/v1")
+VLLM_API_KEY = os.environ.get("VLLM_API_KEY", "none")
+MODEL = os.environ.get("VALIDATOR_MODEL", "mixtral-8x7b-instruct")
 MAX_RETRIES = 4
+
+client = OpenAI(base_url=VLLM_BASE_URL, api_key=VLLM_API_KEY)
 
 
 def extract_hybrid_claims(record):
     """
-    Sends spaCy-tagged text to Claude for reasoning-based claim extraction.
-    <Scientific_claim> tokens act as hints, but Claude also surfaces hidden claims
+    Sends spaCy-tagged text to the LLM for reasoning-based claim extraction.
+    <Scientific_claim> tokens act as hints; the model also surfaces hidden claims
     embedded in surrounding context.
     """
     prompt = f"""You are a scientific claim extractor working on research paper chunks.
@@ -38,13 +40,15 @@ TEXT:
 
     for attempt in range(MAX_RETRIES):
         try:
-            response = client.messages.create(
+            response = client.chat.completions.create(
                 model=MODEL,
                 max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}]
+                temperature=0,
+                messages=[{"role": "user", "content": prompt}],
             )
-            return response.content[0].text.strip()
-        except anthropic.RateLimitError as e:
+            content = response.choices[0].message.content
+            return (content or "").strip()
+        except RateLimitError:
             wait = (2 ** attempt) * 5
             print(f"  [RATE LIMIT] chunk {record['chunk_id']}, attempt {attempt+1}/{MAX_RETRIES} — waiting {wait}s...")
             time.sleep(wait)

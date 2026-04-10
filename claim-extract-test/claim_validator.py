@@ -213,11 +213,13 @@ async def validate_claim(
                         },
                         {"role": "user", "content": prompt},
                     ],
+                    # Requires OpenAI-compatible structured output; vLLM supports this for many chat models—remove if your server rejects it.
                     response_format={"type": "json_object"},
                     max_tokens=current_max_tokens,
                     temperature=0.0,
                 )
-                raw = response.choices[0].message.content.strip()
+                content = response.choices[0].message.content
+                raw = (content or "").strip()
                 clean = re.sub(r"```(?:json)?|```", "", raw).strip()
                 json_blob = _extract_first_json_object(clean)
                 parsed = json.loads(json_blob)
