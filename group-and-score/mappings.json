@@ -1,0 +1,156 @@
+{
+  "dimensions": {
+    "scientific_rigor": {
+      "label": "Scientific Rigor",
+      "question": "Is the science done carefully?",
+      "tags": [
+        "Definitional",
+        "Background",
+        "Methodological",
+        "Measurement",
+        "Observational",
+        "Limitation",
+        "Replication"
+      ]
+    },
+    "evidential_strength": {
+      "label": "Evidential Strength",
+      "question": "Is the evidence strong enough for the claims made?",
+      "tags": [
+        "Correlational",
+        "Causal",
+        "Comparative",
+        "NullFinding",
+        "Mechanistic",
+        "Benchmark"
+      ]
+    },
+    "originality": {
+      "label": "Originality",
+      "question": "Is the work genuinely new?",
+      "tags": [
+        "GapStatement",
+        "Hypothesis",
+        "NoveltyAssertion",
+        "IncrementalContribution",
+        "Refutation",
+        "Synthesis"
+      ]
+    },
+    "execution_credibility": {
+      "label": "Execution Credibility",
+      "question": "Are they actually delivering?",
+      "tags": [
+        "Milestone",
+        "Feasibility",
+        "Performance",
+        "Setback",
+        "Roadmap",
+        "FutureWork"
+      ]
+    },
+    "financial_integrity": {
+      "label": "Financial Integrity",
+      "question": "Is the money well-structured and aligned?",
+      "tags": [
+        "FundingSource",
+        "BudgetAllocation",
+        "ResourceAlignment",
+        "IncentiveStructure",
+        "Sustainability"
+      ]
+    },
+    "governance_accountability": {
+      "label": "Governance & Accountability",
+      "question": "Are there real accountability mechanisms?",
+      "tags": [
+        "GovernanceStructure",
+        "Decentralization",
+        "Accountability",
+        "LegalRegulatory"
+      ]
+    },
+    "team_credibility": {
+      "label": "Team Credibility",
+      "question": "Can they actually do this?",
+      "tags": [
+        "Expertise",
+        "TrackRecord",
+        "Affiliation"
+      ]
+    },
+    "real_world_traction": {
+      "label": "Real-World Traction",
+      "question": "Does anyone actually use or care about this?",
+      "tags": [
+        "ImpactPotential",
+        "Adoption",
+        "SocietalImpact",
+        "Generalizability"
+      ]
+    }
+  },
+  "cross_cutting": {
+    "label": "Cross-Cutting / Flags",
+    "description": "These tags do not map to a single gradeable dimension. They should be surfaced as metadata or modifiers on the claim rather than contributing to a dimension score directly.",
+    "tags": [
+      "ConflictOfInterest",
+      "Interpretive",
+      "Predictive",
+      "Prescriptive",
+      "Hedge",
+      "SourceAttribution",
+      "Taxonomic"
+    ]
+  },
+  "tag_index": {
+    "Definitional":           "scientific_rigor",
+    "Background":             "scientific_rigor",
+    "Methodological":         "scientific_rigor",
+    "Measurement":            "scientific_rigor",
+    "Observational":          "scientific_rigor",
+    "Limitation":             "scientific_rigor",
+    "Replication":            "scientific_rigor",
+    "Correlational":          "evidential_strength",
+    "Causal":                 "evidential_strength",
+    "Comparative":            "evidential_strength",
+    "NullFinding":            "evidential_strength",
+    "Mechanistic":            "evidential_strength",
+    "Benchmark":              "evidential_strength",
+    "GapStatement":           "originality",
+    "Hypothesis":             "originality",
+    "NoveltyAssertion":       "originality",
+    "IncrementalContribution":"originality",
+    "Refutation":             "originality",
+    "Synthesis":              "originality",
+    "Milestone":              "execution_credibility",
+    "Feasibility":            "execution_credibility",
+    "Performance":            "execution_credibility",
+    "Setback":                "execution_credibility",
+    "Roadmap":                "execution_credibility",
+    "FutureWork":             "execution_credibility",
+    "FundingSource":          "financial_integrity",
+    "BudgetAllocation":       "financial_integrity",
+    "ResourceAlignment":      "financial_integrity",
+    "IncentiveStructure":     "financial_integrity",
+    "Sustainability":         "financial_integrity",
+    "GovernanceStructure":    "governance_accountability",
+    "Decentralization":       "governance_accountability",
+    "Accountability":         "governance_accountability",
+    "LegalRegulatory":        "governance_accountability",
+    "Expertise":              "team_credibility",
+    "TrackRecord":            "team_credibility",
+    "Affiliation":            "team_credibility",
+    "ImpactPotential":        "real_world_traction",
+    "Adoption":               "real_world_traction",
+    "SocietalImpact":         "real_world_traction",
+    "Generalizability":       "real_world_traction",
+    "ConflictOfInterest":     "cross_cutting",
+    "Interpretive":           "cross_cutting",
+    "Predictive":             "cross_cutting",
+    "Prescriptive":           "cross_cutting",
+    "Hedge":                  "cross_cutting",
+    "SourceAttribution":      "cross_cutting",
+    "Taxonomic":              "cross_cutting"
+  }
+}

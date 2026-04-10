@@ -1,0 +1,17 @@
+# Core: LLM steps (vLLM / OpenAI-compatible API)
+openai>=1.40.0
+python-dotenv>=1.0.0
+
+# Step 1 — PDF → chunks (Docling + HuggingFace tokenizer; BAAI/bge-m3 pulled at runtime)
+docling>=2.0.0
+docling-core>=2.0.0
+transformers>=4.40.0
+
+# Step 2 — dependency tagging
+spacy>=3.7.0
+
+# After install, download the spaCy model used by spacy_test.py:
+#   python -m spacy download en_core_web_sm
+#
+# PyTorch is required by Docling/transformers; usually installed as a dependency of
+# docling. For GPU builds, follow https://pytorch.org if you need a specific CUDA wheel.

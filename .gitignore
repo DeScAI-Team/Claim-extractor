@@ -1,1 +1,30 @@
+# Secrets and local config
 .env
+
+# Arweave CLI app (deps, wallets, receipts — see Arweave-Cli/.gitignore)
+Arweave-Cli/
+
+# Local documents
+document (8).pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+# Root folder named `test` is a local venv in this repo (pyvenv.cfg)
+/test/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
