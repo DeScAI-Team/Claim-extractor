@@ -1,8 +1,8 @@
 # Secrets and local config
 .env
 
-# Arweave CLI app (deps, wallets, receipts — see Arweave-Cli/.gitignore)
-Arweave-Cli/
+# Arweave-Cli: Node install only (.env covered by root `.env`)
+Arweave-Cli/node_modules/
 
 # Local documents
 document (8).pdf
@@ -28,3 +28,9 @@ env/
 .DS_Store
 Thumbs.db
 *.log
+
+# JSON outside data/ (artifacts, wallets, etc.)
+**/*.json
+!data/**/*.json
+!**/package.json
+!**/package-lock.json
