@@ -8,11 +8,13 @@
 | 2 | `spacy_test.py` | `text_knowledge_base.jsonl` | `test_output_tagged.jsonl` |
 | 3 | `LLM_extract.py` (claim extraction via local vLLM) | `test_output_tagged.jsonl` | `final_claims_for_audit.jsonl` |
 | 4 | `claim_validator.py` | `final_claims_for_audit.jsonl` | `validated_claims.jsonl` |
-| 5 | `claim-classifier/classify_claims.py` | `validated_claims.jsonl` | `claim-classifier/classified_claims.jsonl` |
+| 5 | `claim-classifier/classify_claims.py` | `validated_claims.jsonl` | `claim-classifier/classified_claims.jsonl` (or `-o`, e.g. under `data/`) |
 | 6 | `group-and-score/group.py` | Classified claims JSONL (`claim_classification_*` fields) | Grouped JSON (stdout or `-o`) |
 | 7 | `group-and-score/prep.py` | JSON from step 6 | Same structure + `claim_narrative` per claim |
+| 8 | `review-gen/review.py` | `prepped.json` | `review.json` |
+| 9 (optional) | `Arweave-Cli/upload_orchestrator.py` | `review.json` | On-chain upload; receipt JSON (`--receipt`, default under `Arweave-Cli/`) |
 
-**Dependencies (LLM steps):** Install `openai` and `python-dotenv` (`pip install openai python-dotenv`). Steps 1–5 do **not** require `anthropic` or `ANTHROPIC_API_KEY`. Docling, spaCy, Transformers, etc. are still required for PDF chunking and tagging as before. Steps 6–7 are **stdlib-only** (JSON in/out).
+**Dependencies (LLM steps):** Install `openai` and `python-dotenv` (`pip install openai python-dotenv`). Steps 1–5 and **8** do **not** require `anthropic` or `ANTHROPIC_API_KEY`. Docling, spaCy, Transformers, etc. are still required for PDF chunking and tagging as before. Steps 6–7 are **stdlib-only** (JSON in/out). Step **9** needs Node and `Arweave-Cli` setup.
 
 Step 5 details: [claim-classifier/README.md](claim-classifier/README.md).
 
@@ -49,11 +51,20 @@ Pipe **group → prep** without an intermediate file (use `-` for stdin; require
 python group-and-score/group.py claim-classifier/classified_claims.jsonl | python group-and-score/prep.py - -o group-and-score/prepped.json
 ```
 
+**One-shot end-to-end** (steps 1–8; writes steps 5–8 under `data/` by default, or `--artifacts-dir`):
+
+```bash
+python run_e2e_pipeline.py --dry-run
+python run_e2e_pipeline.py
+python run_e2e_pipeline.py --pdf path/to/paper.pdf --artifacts-dir data
+python run_e2e_pipeline.py --upload   # optional step 9: Arweave upload of data/review.json
+```
+
 ---
 
 ## Configuration — local vLLM (OpenAI-compatible)
 
-Set via environment variables or a `.env` file in the project root. **Steps 1, 3, 4, and 5** send LLM traffic to `VLLM_BASE_URL` (same server; use `VALIDATOR_MODEL` for the served model name unless you override per step).
+Set via environment variables or a `.env` file in the project root. **Steps 1, 3, 4, 5, and 8** send LLM traffic to `VLLM_BASE_URL` (same server; use `VALIDATOR_MODEL` for the served model name unless you override per step).
 
 | Variable | Default | Description |
 |----------|---------|-------------|

@@ -1,0 +1,679 @@
+{
+  "scientific_rigor": {
+    "score": 1.0,
+    "members": [
+      {
+        "claim_type": "Fact",
+        "claim": "The Maillard reaction produces early glycation intermediates that undergo oxidation and rearrangement to form stable AGE adducts.",
+        "chunk_id": 3,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly stated in the 'Research Question: Background, Importance, and Relevance' section, which explains the Maillard reaction's role in AGE formation.",
+        "relevancy_score": 0.2,
+        "claim_classification_1": [
+          "Background"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "AGEs cause pathology through two primary mechanisms: direct modification of proteins causing cross-linking that impairs function, and binding to the receptor for advanced glycation end products.",
+        "chunk_id": 3,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the background section which explicitly states the two mechanisms of AGE-induced pathology: protein cross-linking and RAGE binding.",
+        "relevancy_score": 0.4,
+        "claim_classification_1": [
+          "Definitional"
+        ],
+        "claim_classification_2": [
+          "Background"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Aminoguanidine reached Phase III trials but was discontinued due to adverse effects.",
+        "chunk_id": 4,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the text in the 'Background, Importance, and Relevance' section which states that aminoguanidine reached Phase III trials but was discontinued due to adverse effects.",
+        "relevancy_score": 0.2,
+        "claim_classification_1": [
+          "Limitation"
+        ],
+        "claim_classification_2": [
+          "Setback"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "This approach has been validated for other small molecule targets including digoxigenin and heme.",
+        "chunk_id": 5,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the text in the Background section, which explicitly states that the approach has been validated for other small molecule targets like digoxigenin and heme.",
+        "relevancy_score": 0.8,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [
+          "Benchmark"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "Such binders would serve as research tools for detecting and quantifying specific AGE species, and as scaffolds for downstream enzyme design to actively degrade AGEs.",
+        "chunk_id": 5,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The key sections explicitly state that designed AGE binders would serve as research tools for detecting/quantifying AGEs and as scaffolds for enzyme design to degrade them.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Measurement"
+        ],
+        "claim_classification_2": [
+          "Methodological"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Molecular coordinates can be energy-minimized using the MMFF94 force field prior to diffusion design.",
+        "chunk_id": 9,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Target Selection and Structure Preparation",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Target Selection and Structure Preparation section explicitly states that coordinates will be generated from SMILES notation using RDKit and energy-minimized using the MMFF94 force field prior to diffusion design.",
+        "relevancy_score": 0.6,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Roadmap",
+        "claim": "Designed binders will be displayed on yeast cell surfaces as Aga2p fusions.",
+        "chunk_id": 11,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Yeast Surface Display Screening",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The 'Yeast Surface Display Screening' section explicitly states that designed binders will be displayed on yeast cell surfaces as Aga2p fusions.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Roadmap",
+        "claim": "Binding cells will be enriched over 2-3 rounds of selection.",
+        "chunk_id": 11,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Yeast Surface Display Screening",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the 'Yeast Surface Display Screening' section which explicitly states that binding cells will be enriched over 2-3 rounds of selection.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Roadmap",
+        "claim": "Top hits from yeast display will be expressed in E. coli (BL21(DE3) strain) and purified by nickel affinity chromatography.",
+        "chunk_id": 12,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Binding Characterization",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The 'Binding Characterization' section explicitly states this process. The claim directly matches the described procedure.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [
+          "Observational"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "Blinding is not applicable to backbone generation or sequence design due to their computational nature.",
+        "chunk_id": 13,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Blinding and Bias Minimization",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the 'Blinding and Bias Minimization' section, which explicitly states that blinding is not applicable to backbone generation or sequence design due to their computational nature.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "The experimental hit rate for top-filtered designs is estimated at 5 -15%.",
+        "chunk_id": 14,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Sample and Statistical Power",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Sample and Statistical Power section explicitly states the estimated hit rate for top-filtered designs is 5-15% based on prior benchmarks. This directly supports the claim.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Performance"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Roadmap",
+        "claim": "No covariates or regressors are anticipated for primary analyses.",
+        "chunk_id": 14,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Sample and Statistical Power",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the 'Sample and Statistical Power' section which explicitly states that no covariates or regressors are anticipated for primary analyses.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Computational designs are filtered by requiring pLDDT > 85 across the full design prior to experimental testing.",
+        "chunk_id": 16,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Pre-Processing",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Pre-Processing section explicitly states that pLDDT > 85 is a filtering criterion. This directly supports the claim about computational designs being filtered by this metric.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": [
+          "Benchmark"
+        ]
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "Designs that fail any of the pre-processing criteria are excluded from experimental testing.",
+        "chunk_id": 16,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Pre-Processing",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Pre-Processing section explicitly states that designs failing any of the criteria are excluded from experimental testing.",
+        "relevancy_score": 0.6,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "BLI sensorgrams will be double-referenced (reference channel and buffer-only reference) prior to kinetic fitting.",
+        "chunk_id": 16,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Pre-Processing",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Pre-Processing section explicitly states that BLI sensorgrams will be double-referenced using reference channel and buffer-only reference before kinetic fitting.",
+        "relevancy_score": 0.6,
+        "claim_classification_1": [
+          "Measurement"
+        ],
+        "claim_classification_2": [
+          "Observational"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Designs with a signal-to-background ratio greater than 3 relative to noligand controls are classified as hits.",
+        "chunk_id": 17,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Primary Analysis",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly stated in the 'Primary Analysis' section, which defines hits as designs with a signal-to-background ratio > 3 relative to noligand controls.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Definitional"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "The hit rate and its 95% Wilson confidence interval will be reported as the primary outcome.",
+        "chunk_id": 17,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Primary Analysis",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The primary outcome is explicitly defined as the hit rate with 95% Wilson confidence interval in the Primary Analysis section.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Measurement"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "The Spearman rank correlation assesses the correlation between in silico metrics (AlphaFold2 pLDDT, Rosetta binding energy) and experimental binding.",
+        "chunk_id": 18,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Secondary Analyses",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The secondary analysis explicitly states that Spearman rank correlation will be used to assess the correlation between in silico metrics and experimental binding.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Correlational"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Affinity values (KD) will be reported as mean ± standard deviation from triplicate measurements.",
+        "chunk_id": 21,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Statistical Methods",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly stated in the Statistical Methods section under 'Affinity values (KD) will be reported as mean ± standard deviation from triplicate measurements.'",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Outliers in BLI data will be defined as measurements deviating more than 3 standard deviations from the replicate mean and will be excluded after documentation.",
+        "chunk_id": 21,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Statistical Methods",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the 'Statistical Methods' section which explicitly states the outlier definition and exclusion process.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Definitional"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "If no designs show a signal-to-background ratio > 3 in the initial yeast display screen, then the following pre-specified contingent analyses will be executed: (a) testing binding to free CMLlysine conjugate to determine whether the absence of binding reflects a scaffold problem or a target accessibility problem; and (b) assessing whether designs adopt the computationally predicted fold using circular dichroism (CD) spectroscopy to determine whether folding failures explain the absence of binding.",
+        "chunk_id": 23,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Contingent Analysis",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly stated in the 'Contingent Analysis' section, which outlines the pre-specified actions if the primary screen yields no positive results.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Roadmap",
+        "claim": "A preregistration of this protocol will be posted on ResearchHub prior to commencement of data collection.",
+        "chunk_id": 31,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Registration",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Registration section explicitly states that a preregistration will be posted on ResearchHub before data collection begins.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      }
+    ]
+  },
+  "execution_credibility": {
+    "score": 1.0,
+    "members": [
+      {
+        "claim_type": "Fact",
+        "claim": "Aminoguanidine reached Phase III trials but was discontinued due to adverse effects.",
+        "chunk_id": 4,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the text in the 'Background, Importance, and Relevance' section which states that aminoguanidine reached Phase III trials but was discontinued due to adverse effects.",
+        "relevancy_score": 0.2,
+        "claim_classification_1": [
+          "Limitation"
+        ],
+        "claim_classification_2": [
+          "Setback"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "The experimental hit rate for top-filtered designs is estimated at 5 -15%.",
+        "chunk_id": 14,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Sample and Statistical Power",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Sample and Statistical Power section explicitly states the estimated hit rate for top-filtered designs is 5-15% based on prior benchmarks. This directly supports the claim.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Performance"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Preliminary computational feasibility tests of RFdiffusion All-Atom with CML have been completed.",
+        "chunk_id": 26,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Study Status",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The 'Pilot Data' section explicitly states that preliminary computational experiments with RFdiffusion All-Atom and CML were conducted and confirmed feasibility.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Feasibility"
+        ],
+        "claim_classification_2": [
+          "FutureWork"
+        ],
+        "claim_classification_3": []
+      }
+    ]
+  },
+  "evidential_strength": {
+    "score": 1.0,
+    "members": [
+      {
+        "claim_type": "Fact",
+        "claim": "Activating RAGE signaling triggers chronic inflammation, oxidative stress, and cellular dysfunction.",
+        "chunk_id": 4,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the background section which states that AGEs bind to RAGE, activating NFκB signaling and triggering chronic inflammation, oxidative stress, and cellular dysfunction.",
+        "relevancy_score": 0.2,
+        "claim_classification_1": [
+          "Mechanistic"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "Unlike small molecules, designed proteins can achieve high affinity and specificity through extensive complementary surfaces.",
+        "chunk_id": 5,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The key sections explicitly state that designed proteins can achieve high affinity and specificity through extensive complementary surfaces, directly supporting the claim.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Comparative"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "This approach has been validated for other small molecule targets including digoxigenin and heme.",
+        "chunk_id": 5,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the text in the Background section, which explicitly states that the approach has been validated for other small molecule targets like digoxigenin and heme.",
+        "relevancy_score": 0.8,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [
+          "Benchmark"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Roadmap",
+        "claim": "No group has yet applied this technology to AGE targeting.",
+        "chunk_id": 5,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Research Question: Background, Importance, and Relevance",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly supported by the text in the Background section, which explicitly states that no group has applied RFdiffusion All-Atom to AGE targeting.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "NullFinding"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "Computational designs are filtered by requiring pLDDT > 85 across the full design prior to experimental testing.",
+        "chunk_id": 16,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Pre-Processing",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Pre-Processing section explicitly states that pLDDT > 85 is a filtering criterion. This directly supports the claim about computational designs being filtered by this metric.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Methodological"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": [
+          "Benchmark"
+        ]
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "The Spearman rank correlation assesses the correlation between in silico metrics (AlphaFold2 pLDDT, Rosetta binding energy) and experimental binding.",
+        "chunk_id": 18,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Secondary Analyses",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The secondary analysis explicitly states that Spearman rank correlation will be used to assess the correlation between in silico metrics and experimental binding.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Correlational"
+        ],
+        "claim_classification_2": [
+          "Measurement"
+        ],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "These findings will contribute to the literature on de novo protein design benchmarks and to the aging intervention field.",
+        "chunk_id": 24,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Interpreting Results",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The 'Interpreting Results' section explicitly states that findings will contribute to de novo protein design benchmarks and aging intervention literature, directly supporting the claim.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Benchmark"
+        ],
+        "claim_classification_2": [
+          "NoveltyAssertion"
+        ],
+        "claim_classification_3": []
+      }
+    ]
+  },
+  "originality": {
+    "score": 1.0,
+    "members": [
+      {
+        "claim_type": "Roadmap",
+        "claim": "All raw data files will be retained in their original formats.",
+        "chunk_id": 15,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Data Collection, Processing, and Planned Analysis Data Sources and Instruments",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The Data Collection section explicitly states that all raw data files will be retained in their original formats.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "NoveltyAssertion"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Assertion",
+        "claim": "Secondary analyses (i) -(iii) are exploratory; no correction for multiple comparisons will be applied, and all p-values will be reported without adjustment with a note that these analyses are hypothesis-generating.",
+        "chunk_id": 21,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Statistical Methods",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly stated in the 'Statistical Methods' section under 'Multiple hypothesis testing'.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Hypothesis"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      },
+      {
+        "claim_type": "Fact",
+        "claim": "These findings will contribute to the literature on de novo protein design benchmarks and to the aging intervention field.",
+        "chunk_id": 24,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Interpreting Results",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The 'Interpreting Results' section explicitly states that findings will contribute to de novo protein design benchmarks and aging intervention literature, directly supporting the claim.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "Benchmark"
+        ],
+        "claim_classification_2": [
+          "NoveltyAssertion"
+        ],
+        "claim_classification_3": []
+      }
+    ]
+  },
+  "cross_cutting": {
+    "score": 1.0,
+    "members": [
+      {
+        "claim_type": "Roadmap",
+        "claim": "All computational designs, screening data, binding characterization results, and raw data files will be deposited on Zenodo under a Creative Commons Attribution (CC-BY 4.0) license within 3 months of project completion, regardless of outcome.",
+        "chunk_id": 25,
+        "doc_name": "De-Novo-Protein-Binder-Design-for-Advanced-Glycation-End-Products",
+        "category": "Claim-extractor",
+        "section_heading": "Dissemination of Information",
+        "semantic_category": "other",
+        "verdict": "supported",
+        "rationale": "The claim is directly stated in the Dissemination of Information section, which explicitly mentions depositing all data on Zenodo with a CC-BY 4.0 license within 3 months of completion.",
+        "relevancy_score": 0.85,
+        "claim_classification_1": [
+          "SourceAttribution"
+        ],
+        "claim_classification_2": [],
+        "claim_classification_3": []
+      }
+    ]
+  }
+}

@@ -1,15 +1,15 @@
 """
 Review generation pipeline.
 
-Transforms grouped claim JSON (prepped.json) into a structured review JSON
+Transforms grouped claim JSON (prepped JSON) into a structured review JSON
 by extracting narratives, generating rationales via a local vLLM endpoint,
 condensing multi-chunk rationales, and producing a top-level review statement.
 """
 
+import argparse
 import json
 import os
 import re
-import sys
 from datetime import date
 from pathlib import Path
 
@@ -243,9 +243,37 @@ def review_statement_gen(
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Build review.json from prepped grouped claims (vLLM)."
+    )
+    parser.add_argument(
+        "--prepped",
+        type=Path,
+        default=PREPPED_PATH,
+        help=f"Input JSON from prep.py (default: {PREPPED_PATH})",
+    )
+    parser.add_argument(
+        "--mappings",
+        type=Path,
+        default=MAPPINGS_PATH,
+        help=f"mappings.json path (default: {MAPPINGS_PATH})",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=OUTPUT_PATH,
+        help=f"Write review JSON here (default: {OUTPUT_PATH})",
+    )
+    args = parser.parse_args()
+
+    prepped_path = args.prepped.expanduser().resolve()
+    mappings_path = args.mappings.expanduser().resolve()
+    output_path = args.output.expanduser().resolve()
+
     print("Loading inputs ...")
-    prepped = json.loads(PREPPED_PATH.read_text(encoding="utf-8"))
-    mappings = json.loads(MAPPINGS_PATH.read_text(encoding="utf-8"))
+    prepped = json.loads(prepped_path.read_text(encoding="utf-8"))
+    mappings = json.loads(mappings_path.read_text(encoding="utf-8"))
 
     rationale_prompt = _load_prompt("rationale_generation_prompt_v2.md")
     condense_prompt = _load_prompt("rationale_condenser_prompt.md")
@@ -303,10 +331,11 @@ def main() -> None:
     )
 
     # Write output
-    OUTPUT_PATH.write_text(
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
         json.dumps(review_obj, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    print(f"\nReview written to {OUTPUT_PATH}")
+    print(f"\nReview written to {output_path}")
 
 
 if __name__ == "__main__":

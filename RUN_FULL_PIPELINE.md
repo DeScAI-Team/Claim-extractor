@@ -15,7 +15,7 @@ Use this when your OpenAI-compatible LLM (e.g. vLLM) runs on another machine or 
 
 ## Configuration (`.env` in repo root)
 
-Place `.env` next to `run_e2e_pipeline.py`. Steps 1, 3, 4, and 5 read these (see `README.md` for defaults).
+Place `.env` next to `run_e2e_pipeline.py`. LLM-backed steps (1, 3, 4, 5, and 8 — review generation) read these (see `README.md` for defaults).
 
 | Variable | Purpose |
 |----------|---------|
@@ -40,32 +40,45 @@ The orchestrator loads `.env` when `python-dotenv` is installed; pipeline script
 
 ## Option A — One command (single PDF)
 
-From the **repository root**:
+From the **repository root**, `run_e2e_pipeline.py` runs **steps 1–8** (PDF through review JSON). Post-validation artifacts default to **`data/`** (override with `--artifacts-dir`). Optional **step 9** uploads `review.json` to Arweave when you pass **`--upload`** (requires `npm install` in `Arweave-Cli`, wallet `.env`, and Node).
 
 ```bash
 python run_e2e_pipeline.py --dry-run
 python run_e2e_pipeline.py
 python run_e2e_pipeline.py --pdf path/to/paper.pdf
+python run_e2e_pipeline.py --artifacts-dir path/to/run_outputs
+python run_e2e_pipeline.py --upload
 ```
 
-Outputs under `claim-extract-test/`:
+**Outputs under `claim-extract-test/`** (steps 1–4; paths fixed for downstream scripts):
 
 - `text_knowledge_base.jsonl` — step 1
 - `test_output_tagged.jsonl` — step 2
 - `final_claims_for_audit.jsonl` — step 3
 - `validated_claims.jsonl` — step 4
 
-`run_e2e_pipeline.py` stops after step 4. To add claim-type tags, run step 5 separately (see [claim-classifier/README.md](claim-classifier/README.md)):
+**Outputs under `--artifacts-dir`** (default `data/`; steps 5–8):
+
+- `classified_claims.jsonl` — step 5 (`classify_claims.py -i` / `-o`)
+- `grouped.json` — step 6 (`group.py -o`)
+- `prepped.json` — step 7 (`prep.py -o`)
+- `review.json` — step 8 (`review.py -o`)
+
+**Optional step 9 (`--upload`):** `Arweave-Cli/upload_orchestrator.py` uploads `review.json` and writes the receipt to **`upload_receipt.json`** in the same artifacts directory (`--receipt` on that script).
+
+### Manual steps (same as orchestrator defaults)
+
+To run classification and downstream steps yourself (see [claim-classifier/README.md](claim-classifier/README.md)):
 
 ```bash
 python claim-classifier/classify_claims.py
 ```
 
-That writes `claim-classifier/classified_claims.jsonl` by default.
+That writes `claim-classifier/classified_claims.jsonl` by default unless you pass `-o`.
 
 ### Optional — group by dimension and add LLM narratives
 
-After step 5, you can aggregate claims by scoring dimension and attach a short natural-language line per claim for downstream prompts (see [README.md](README.md) § *Grouping & narratives*):
+Aggregate by scoring dimension and attach narrative lines (see [README.md](README.md) § *Grouping & narratives*):
 
 ```bash
 python group-and-score/group.py claim-classifier/classified_claims.jsonl -o group-and-score/grouped.json
@@ -76,6 +89,12 @@ Or pipe without an intermediate file (on Windows, use `-` for `prep.py` stdin—
 
 ```bash
 python group-and-score/group.py claim-classifier/classified_claims.jsonl | python group-and-score/prep.py - -o group-and-score/prepped.json
+```
+
+Review JSON from prepped output (defaults match `group-and-score/prepped.json` → `review-gen/review.json` if you omit flags):
+
+```bash
+python review-gen/review.py --prepped group-and-score/prepped.json --mappings group-and-score/mappings.json -o review-gen/review.json
 ```
 
 ## Option B — Step by step
