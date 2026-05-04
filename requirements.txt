@@ -6,12 +6,14 @@ python-dotenv>=1.0.0
 docling>=2.0.0
 docling-core>=2.0.0
 transformers>=4.40.0
+# OCR stack Docling uses for many PDFs (RapidOCR + torch); avoids opaque first-run only deps
+rapidocr>=3.0.0
 
 # Step 2 — dependency tagging
-spacy>=3.7.0
+spacy>=3.8.0,<3.9.0
+# English pipeline for claim-extract/spacy_test.py (official wheel; `en_core_web_sm` is not a normal PyPI name pip can resolve)
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
-# After install, download the spaCy model used by spacy_test.py:
-#   python -m spacy download en_core_web_sm
-#
 # PyTorch is required by Docling/transformers; usually installed as a dependency of
 # docling. For GPU builds, follow https://pytorch.org if you need a specific CUDA wheel.
+requests>=2.31.0,<3

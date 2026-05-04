@@ -148,7 +148,9 @@ Each line is the same object as `validated_claims.jsonl`, plus three arrays (eac
 
 **Mappings.** [group-and-score/mappings.json](group-and-score/mappings.json) defines dimensions and a `tag_index` from classifier tag names (e.g. `Methodological`, `Hypothesis`) to group ids (e.g. `scientific_rigor`, `originality`). Tags absent from `tag_index` are ignored for grouping.
 
-**`group.py`** reads one JSON object per line (same schema as step 5). For each line it unions tags from `claim_classification_1`, `claim_classification_2`, and `claim_classification_3`, maps each tag through `tag_index`, and places the **full claim object** in every matching group **once per group** (duplicate tags that map to the same dimension still yield a single copy). Empty groups are omitted from the output.
+**`group.py`** reads one JSON object per line (same schema as step 5). It first **drops bogus placeholder records** (empty `claim` text and known non-claims such as `No scientific claims identified in the text.` from extractor/validator artifacts). Those lines are omitted from grouping and scoring; a count is printed to **stderr** when any are removed. For each remaining line it unions tags from `claim_classification_1`, `claim_classification_2`, and `claim_classification_3`, maps each tag through `tag_index`, and places the **full claim object** in every matching group **once per group** (duplicate tags that map to the same dimension still yield a single copy). Empty groups are omitted from the output.
+
+In the reorganized repo layout, the same script lives at [`articles/pipeline/group.py`](articles/pipeline/group.py).
 
 Each group value is an object:
 
@@ -159,7 +161,7 @@ Each group value is an object:
 }
 ```
 
-- **`score`**: `supported / (supported + unsupported)` over that group’s `members`, using only `verdict` values `supported` and `unsupported`. Claims with `insufficient_info` or any other verdict do not contribute to the numerator or denominator. If the denominator would be zero, `score` is JSON `null`.
+- **`score`**: First compute the **verdict support ratio** — `supported / (supported + unsupported)` over that group’s `members`, counting only `verdict` values `supported` and `unsupported` (claims with `insufficient_info` or any other verdict still do not contribute to that ratio’s numerator or denominator). Then **blend relevancy**: let **mean_rel** be the mean of `relevancy_score` over members that have a numeric score in **0.0–1.0** (from step 4). Let **eff_rel** = **mean_rel^γ** with default **γ = 0.5** (square root), so low group-mean relevancy is less punishing than a linear product; set **`RELEVANCY_BLEND_EXPONENT=1`** for legacy `support_ratio × mean_rel`. Let **blended** = `support_ratio × eff_rel` when at least one relevancy is present, else `support_ratio` alone. Then **small‑n shrink** toward **0.5**: with **n = len(members)** and prior **`SCORE_SHRINK_PRIOR` = 5** in [`articles/pipeline/group.py`](articles/pipeline/group.py), **`score` = round(clamp(blended × n/(n+5) + 0.5 × 5/(n+5), 0, 1), 4)`** — so scores with few members are pulled toward 0.5; large groups are almost unchanged. If the support-ratio denominator would be zero, `score` is JSON `null`.
 
 **`prep.py`** reads that grouped JSON and writes the same structure with one extra string field on each member: **`claim_narrative`**, built from [prompts/claim_llm_narrative_template.md](prompts/claim_llm_narrative_template.md) (sentence under `## Sentence template`). Relevancy wording follows five buckets on `relevancy_score` (0.0–1.0), documented in that file. Override the template path with `--template`.
 

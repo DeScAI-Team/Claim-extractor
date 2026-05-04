@@ -7,15 +7,28 @@ Arweave-Cli/node_modules/
 # Local documents
 document (8).pdf
 
+# Local / generated data (do not commit)
+articles/data/
+compounds/data/
+test-data/
+data/
+
+# Embedded / copied Python environments
+agent/
+
+# Caches
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+**/openalex_cache.json
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
 .eggs/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
 
 # Virtual environments
 .venv/
@@ -29,8 +42,8 @@ env/
 Thumbs.db
 *.log
 
-# JSON outside data/ (artifacts, wallets, etc.)
+# JSON artifacts (allow small pipeline config under articles/pipeline)
 **/*.json
-!data/**/*.json
+!articles/pipeline/**/*.json
 !**/package.json
 !**/package-lock.json

@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""
+Quick pipeline re-run for document (10).
+
+Skips PDF read / add_data.py — uses existing text_knowledge_base.jsonl.
+Runs: spaCy tag → LLM extract → validate → classify → group → triage → retrieve_compare.
+
+Output: articles/data/document (10)/pipe-test2/
+
+Usage:
+  python run_pipe2.py              # full run (steps 1-7)
+  python run_pipe2.py --from-step 4   # resume from classify (needs validated_claims.jsonl)
+  python run_pipe2.py --from-step 6   # just triage + retrieve_compare (needs grouped.json)
+  python run_pipe2.py --with-llm      # run retrieve_compare WITH LLM evidence grading
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent
+PIPELINE = REPO / "articles" / "pipeline"
+CLAIM_EXTRACT = PIPELINE / "claim-extract"
+EMPIRICAL = PIPELINE / "empirical"
+MAPPINGS = PIPELINE / "mappings.json"
+
+DOC_DIR = REPO / "articles" / "data" / "document (10)"
+FULL_MD = DOC_DIR / "full.md"
+
+# Source KB — already generated, we reuse it
+SOURCE_KB = DOC_DIR / "pipe-test" / "text_knowledge_base.jsonl"
+
+# Output directory
+OUT = DOC_DIR / "pipe-test2"
+
+PY = sys.executable
+
+
+def run(label: str, cmd: list[str], *, env: dict | None = None, cwd: Path | None = None):
+    print(f"\n{'='*60}")
+    print(f"  {label}")
+    print(f"{'='*60}")
+    print(f"  cmd: {' '.join(cmd[:3])} ...")
+    result = subprocess.run(cmd, env=env, cwd=str(cwd) if cwd else None)
+    if result.returncode != 0:
+        print(f"  FAILED (exit {result.returncode})")
+        sys.exit(result.returncode)
+    print(f"  OK")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Run pipe-test2 pipeline for document (10).")
+    parser.add_argument(
+        "--from-step", type=int, default=1, choices=range(1, 8),
+        help="Start from this step (1=spacy, 2=extract, 3=validate, 4=classify, 5=group, 6=triage, 7=retrieve_compare)",
+    )
+    parser.add_argument(
+        "--with-llm", action="store_true",
+        help="Run retrieve_compare WITH LLM evidence grading (default: --skip-llm)",
+    )
+    args = parser.parse_args()
+    start = args.from_step
+
+    OUT.mkdir(parents=True, exist_ok=True)
+
+    # Copy the KB into our output dir so intermediate files land there
+    kb_dest = OUT / "text_knowledge_base.jsonl"
+    if not kb_dest.exists():
+        shutil.copy2(SOURCE_KB, kb_dest)
+        print(f"Copied KB → {kb_dest}")
+
+    # Force model to /model (vLLM serves it under that id)
+    base_env = {**os.environ, "VALIDATOR_MODEL": "/model"}
+    ce_env = {**base_env, "CLAIM_EXTRACT_DATA_DIR": str(OUT)}
+
+    # --- Step 1: spaCy tagging ---
+    if start <= 1:
+        _spacy_in = CLAIM_EXTRACT / "text_knowledge_base.jsonl"
+        _spacy_out = CLAIM_EXTRACT / "test_output_tagged.jsonl"
+        shutil.copy2(kb_dest, _spacy_in)
+        run(
+            "Step 1/7 — spaCy tagging (text_knowledge_base → test_output_tagged)",
+            [PY, str(CLAIM_EXTRACT / "spacy_test.py")],
+        )
+        shutil.move(str(_spacy_out), str(OUT / "test_output_tagged.jsonl"))
+        _spacy_in.unlink(missing_ok=True)
+
+    # --- Step 2: LLM claim extraction ---
+    if start <= 2:
+        run(
+            "Step 2/7 — LLM claim extraction (test_output_tagged → final_claims_for_audit)",
+            [PY, str(CLAIM_EXTRACT / "LLM_extract.py")],
+            env=ce_env,
+        )
+
+    # --- Step 3: LLM validation ---
+    if start <= 3:
+        run(
+            "Step 3/7 — LLM validation (final_claims → validated_claims)",
+            [PY, str(CLAIM_EXTRACT / "claim_validator.py")],
+            env=ce_env,
+        )
+
+    # --- Step 4: Classification ---
+    validated = OUT / "validated_claims.jsonl"
+    classified = OUT / "classified_claims.jsonl"
+    if start <= 4:
+        run(
+            "Step 4/7 — Classify claims",
+            [PY, str(PIPELINE / "classify_claims.py"), "-i", str(validated), "-o", str(classified)],
+            env=base_env,
+        )
+
+    # --- Step 5: Group by dimension ---
+    grouped = OUT / "grouped.json"
+    if start <= 5:
+        run(
+            "Step 5/7 — Group by dimension",
+            [PY, str(PIPELINE / "group.py"), str(classified), "-o", str(grouped), "--mappings", str(MAPPINGS)],
+            env=base_env,
+        )
+
+    # --- Step 6: Triage ---
+    triaged = OUT / "triaged.json"
+    if start <= 6:
+        run(
+            "Step 6/7 — Triage into buckets",
+            [PY, str(EMPIRICAL / "triage.py"), str(grouped), "-o", str(triaged), "--mappings", str(MAPPINGS)],
+            env=base_env,
+        )
+
+    # --- Step 7: Retrieve + Compare (evidence grading) ---
+    if start <= 7:
+        rc_out = OUT / ("retrieve_compare_llm.json" if args.with_llm else "retrieve_compare_out.json")
+        rc_cmd = [
+            PY, str(EMPIRICAL / "retrieve_compare.py"),
+            str(triaged),
+            "--kb", str(kb_dest),
+            "--fullmd", str(FULL_MD),
+            "--openalex-cache", str(OUT / "openalex_cache.json"),
+            "-o", str(rc_out),
+        ]
+        if not args.with_llm:
+            rc_cmd.append("--skip-llm")
+        run(
+            f"Step 7/7 — Retrieve & compare ({'WITH LLM' if args.with_llm else 'skip-llm'})",
+            rc_cmd,
+            env=base_env,
+        )
+
+    print(f"\n{'='*60}")
+    print(f"  PIPELINE COMPLETE")
+    print(f"  Output dir: {OUT}")
+    print(f"{'='*60}")
+
+    if not args.with_llm:
+        print()
+        print("To re-run step 7 with LLM evidence grading:")
+        print(f"  python run_pipe2.py --from-step 7 --with-llm")
+
+
+if __name__ == "__main__":
+    main()
