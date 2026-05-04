@@ -8,10 +8,10 @@ Runs: spaCy tag → LLM extract → validate → classify → group → triage �
 Output: articles/data/document (10)/pipe-test2/
 
 Usage:
-  python run_pipe2.py              # full run (steps 1-7)
+  python run_pipe2.py              # full run (steps 1-7), LLM enabled
   python run_pipe2.py --from-step 4   # resume from classify (needs validated_claims.jsonl)
   python run_pipe2.py --from-step 6   # just triage + retrieve_compare (needs grouped.json)
-  python run_pipe2.py --with-llm      # run retrieve_compare WITH LLM evidence grading
+  python run_pipe2.py --skip-llm      # run retrieve_compare WITHOUT LLM evidence grading
 """
 
 from __future__ import annotations
@@ -32,8 +32,8 @@ MAPPINGS = PIPELINE / "mappings.json"
 DOC_DIR = REPO / "articles" / "data" / "document (10)"
 FULL_MD = DOC_DIR / "full.md"
 
-# Source KB — already generated, we reuse it
-SOURCE_KB = DOC_DIR / "pipe-test" / "text_knowledge_base.jsonl"
+# Source KB — full document KB (all chunks)
+SOURCE_KB = REPO / "articles" / "data" / "text_knowledge_base.jsonl"
 
 # Output directory
 OUT = DOC_DIR / "pipe-test2"
@@ -60,19 +60,19 @@ def main():
         help="Start from this step (1=spacy, 2=extract, 3=validate, 4=classify, 5=group, 6=triage, 7=retrieve_compare)",
     )
     parser.add_argument(
-        "--with-llm", action="store_true",
-        help="Run retrieve_compare WITH LLM evidence grading (default: --skip-llm)",
+        "--skip-llm", action="store_true",
+        help="Skip LLM evidence grading in retrieve_compare (default: LLM enabled)",
     )
     args = parser.parse_args()
     start = args.from_step
 
     OUT.mkdir(parents=True, exist_ok=True)
 
-    # Copy the KB into our output dir so intermediate files land there
+    # Copy the full KB into our output dir so intermediate files land there
     kb_dest = OUT / "text_knowledge_base.jsonl"
-    if not kb_dest.exists():
+    if not kb_dest.exists() or start == 1:
         shutil.copy2(SOURCE_KB, kb_dest)
-        print(f"Copied KB → {kb_dest}")
+        print(f"Copied KB ({SOURCE_KB.name}) → {kb_dest}")
 
     # Force model to /model (vLLM serves it under that id)
     base_env = {**os.environ, "VALIDATOR_MODEL": "/model"}
@@ -136,7 +136,8 @@ def main():
 
     # --- Step 7: Retrieve + Compare (evidence grading) ---
     if start <= 7:
-        rc_out = OUT / ("retrieve_compare_llm.json" if args.with_llm else "retrieve_compare_out.json")
+        use_llm = not args.skip_llm
+        rc_out = OUT / ("retrieve_compare_llm.json" if use_llm else "retrieve_compare_out.json")
         rc_cmd = [
             PY, str(EMPIRICAL / "retrieve_compare.py"),
             str(triaged),
@@ -145,10 +146,10 @@ def main():
             "--openalex-cache", str(OUT / "openalex_cache.json"),
             "-o", str(rc_out),
         ]
-        if not args.with_llm:
+        if not use_llm:
             rc_cmd.append("--skip-llm")
         run(
-            f"Step 7/7 — Retrieve & compare ({'WITH LLM' if args.with_llm else 'skip-llm'})",
+            f"Step 7/7 — Retrieve & compare ({'WITH LLM' if use_llm else 'skip-llm'})",
             rc_cmd,
             env=base_env,
         )
@@ -158,10 +159,10 @@ def main():
     print(f"  Output dir: {OUT}")
     print(f"{'='*60}")
 
-    if not args.with_llm:
+    if args.skip_llm:
         print()
         print("To re-run step 7 with LLM evidence grading:")
-        print(f"  python run_pipe2.py --from-step 7 --with-llm")
+        print(f"  python run_pipe2.py --from-step 7")
 
 
 if __name__ == "__main__":

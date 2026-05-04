@@ -40,8 +40,21 @@ EMPIRICAL_UNREFERENCED_TAGS: frozenset[str] = frozenset(
     {"Causal", "Correlational", "Mechanistic", "Performance"}
 )
 
-SELF_REPORTED_SEMANTIC: frozenset[str] = frozenset({"abstract", "results"})
-SELF_REPORTED_FACT_TAGS: frozenset[str] = frozenset({"Observational", "Measurement"})
+SELF_REPORTED_SEMANTIC: frozenset[str] = frozenset({"abstract", "result"})
+SELF_REPORTED_FACT_TAGS: frozenset[str] = frozenset(
+    {"Observational", "Measurement", "Causal", "Comparative", "Correlational"}
+)
+
+_METHOD_HEADING_HINTS: frozenset[str] = frozenset([
+    "method", "materials", "protocol", "husbandry", "toxicity",
+    "sequencing", "replication", "preparation", "experimental",
+    "sample preparation", "data processing",
+])
+_RESULT_HEADING_HINTS: frozenset[str] = frozenset([
+    "result", "finding", "efficacy", "differentially expressed",
+    "enrichment", "transcriptomic",
+])
+_ABSTRACT_HEADING_HINTS: frozenset[str] = frozenset(["abstract", "key messages"])
 
 EVIDENCE_AUDITOR_SYSTEM = """You are an evidence auditor. Given a scientific claim from a paper and the abstracts of its cited references, determine whether the cited evidence actually supports the specific claim as stated.
 
@@ -428,9 +441,26 @@ def _unreferenced_summary(rec: dict[str, Any]) -> str:
     return "No inline citations in source chunk."
 
 
+def _effective_semantic_category(rec: dict[str, Any]) -> str:
+    """Resolve semantic_category, falling back to section_heading keywords when 'other'."""
+    sem = str(rec.get("semantic_category") or "").strip().lower()
+    if sem and sem != "other":
+        return sem
+    heading = str(rec.get("section_heading") or "").strip().lower()
+    if not heading:
+        return sem or "other"
+    if any(kw in heading for kw in _ABSTRACT_HEADING_HINTS):
+        return "abstract"
+    if any(kw in heading for kw in _METHOD_HEADING_HINTS):
+        return "method"
+    if any(kw in heading for kw in _RESULT_HEADING_HINTS):
+        return "result"
+    return sem or "other"
+
+
 def _is_self_reported_fact_claim(rec: dict[str, Any]) -> bool:
     """Primary findings stated in abstract/results without inline external cites."""
-    sem = str(rec.get("semantic_category") or "").strip().lower()
+    sem = _effective_semantic_category(rec)
     if sem not in SELF_REPORTED_SEMANTIC:
         return False
     if str(rec.get("claim_type") or "").strip() != "Fact":
@@ -439,13 +469,25 @@ def _is_self_reported_fact_claim(rec: dict[str, Any]) -> bool:
     return bool(tags & SELF_REPORTED_FACT_TAGS)
 
 
-def _self_reported_summary(rec: dict[str, Any], *, skip_llm: bool) -> str:
-    loc = str(rec.get("semantic_category") or "").strip().lower() or "this section"
-    base = (
-        f"Self-reported empirical finding in {loc} text: the manuscript describes "
-        "this as its own experimental or analytic outcome; external references are "
-        "not cited inline in this chunk."
-    )
+def _is_self_reported_method_claim(rec: dict[str, Any]) -> bool:
+    """Protocol/procedure claims from method sections — no external citation expected."""
+    sem = _effective_semantic_category(rec)
+    return sem == "method"
+
+
+def _self_reported_summary(rec: dict[str, Any], *, skip_llm: bool, method: bool = False) -> str:
+    loc = _effective_semantic_category(rec) or "this section"
+    if method:
+        base = (
+            f"Procedural description in {loc} section: the manuscript describes "
+            "its own methodology; no external citation expected."
+        )
+    else:
+        base = (
+            f"Self-reported empirical finding in {loc} text: the manuscript describes "
+            "this as its own experimental or analytic outcome; external references are "
+            "not cited inline in this chunk."
+        )
     if skip_llm:
         return base + " LLM evidence check skipped."
     return base
@@ -831,6 +873,9 @@ def enrich_triaged(
             if not cites and _is_self_reported_fact_claim(rec):
                 rec["evidence_grade"] = "self_reported"
                 rec["evidence_summary"] = _self_reported_summary(rec, skip_llm=True)
+            elif not cites and _is_self_reported_method_claim(rec):
+                rec["evidence_grade"] = "self_reported_method"
+                rec["evidence_summary"] = _self_reported_summary(rec, skip_llm=True, method=True)
             else:
                 rec["evidence_grade"] = "pending"
                 rec["evidence_summary"] = "LLM check skipped."
@@ -841,6 +886,9 @@ def enrich_triaged(
             if _is_self_reported_fact_claim(rec):
                 rec["evidence_grade"] = "self_reported"
                 rec["evidence_summary"] = _self_reported_summary(rec, skip_llm=False)
+            elif _is_self_reported_method_claim(rec):
+                rec["evidence_grade"] = "self_reported_method"
+                rec["evidence_summary"] = _self_reported_summary(rec, skip_llm=False, method=True)
             else:
                 rec["evidence_grade"] = "unreferenced"
                 rec["evidence_summary"] = _unreferenced_summary(rec)
